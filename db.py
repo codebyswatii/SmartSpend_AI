@@ -1,7 +1,11 @@
 import sqlite3
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "expenses.db")
 
 def init_db():
-    conn = sqlite3.connect("expenses.db")
+    conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -17,7 +21,8 @@ def init_db():
     conn.close()
 
 def insert_expense(text, amount, category):
-    conn = sqlite3.connect("expenses.db")
+    init_db()  # 🔥 ensures table exists
+    conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
 
     cursor.execute(
@@ -30,7 +35,7 @@ def insert_expense(text, amount, category):
 
 #########################################
 def delete_last_expense():
-    conn = sqlite3.connect("expenses.db")
+    conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
     
     cursor.execute("""
@@ -44,7 +49,7 @@ def delete_last_expense():
 #########################################
 
 def get_all_expenses():
-    conn = sqlite3.connect("expenses.db")
+    conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM expenses")
