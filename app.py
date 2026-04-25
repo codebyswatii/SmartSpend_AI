@@ -7,6 +7,8 @@ import re
 
 app = Flask(__name__)
 
+init_db()
+
 @app.route('/')
 def home():
     return render_template("index.html")
