@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Expense Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="manifest" href="/static/manifest.json">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <div class="card shadow p-4">
+        <h2 class="text-center mb-4">💰 AI Expense Tracker</h2>
+
+        <div class="input-group mb-3">
+            <input type="text" id="expenseText" class="form-control" placeholder="Enter expense (e.g. pizza 300)">
+            <button class="btn btn-primary" onclick="addExpense()">Add</button>
+        </div>
+
+        <div class="alert alert-info" id="result" style="display:none;"></div>
+
+        <div class="text-center mt-3">
+            <button class="btn btn-success mt-2" onclick="getInsights()">Show Insights</button>
+            <button class="btn btn-secondary mt-2" onclick="getExpenses()">Show All Expenses</button>
+        </div>
+    </div>
+
+    <div class="card shadow p-4 mt-4">
+        <h4>📊 Financial Insights</h4>
+        <div id="insights" class="bg-white p-3 rounded border"></div>
+    </div>
+
+    <div class="card shadow p-4 mt-4">
+        <h4>📋 All Expenses</h4>
+        <div id="expenses" class="bg-light p-3 rounded border"></div>
+    </div>
+
+</div>
+
+<script>
+function addExpense() {
+    let text = document.getElementById("expenseText").value;
+
+    fetch('/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text })
+    })
+    .then(res => res.json())
+    .then(data => {
+        let resultDiv = document.getElementById("result");
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML =
+            `<strong>Category:</strong> ${data.category} <br>
+             <strong>Amount:</strong> ₹${data.amount}`;
+    });
+}
+
+function getInsights() {
+    fetch('/insights')
+    .then(res => res.json())
+    .then(data => {
+        console.log("INSIGHTS DATA:", data); // 👈 ADD THIS
+
+        let html = "";
+
+        // Total
+        html += `<h5>Total Spent: ₹${data.total_spent}</h5><hr>`;
+
+        // Category Distribution
+        html += `<h6>Category Distribution:</h6>`;
+        for (let cat in data.category_distribution) {
+            html += `<p>${cat.toUpperCase()}: ${data.category_distribution[cat]}%</p>`;
+        }
+
+        html += `<hr><h6>Insights:</h6>`;
+
+        // Insights list
+        data.insights.forEach(i => {
+            html += `<p>• ${i}</p>`;
+        });
+
+        document.getElementById("insights").innerHTML = html;
+    });
+}
+
+// function getExpenses() {
+//     fetch('/expenses')
+//     .then(res => res.json())
+//     .then(data => {
+
+//         let html = "";
+
+//         if (data.length === 0) {
+//             html = "<p>No expenses found</p>";
+//         } else {
+//             data.forEach(item => {
+//                 html += `
+//                     <div style="border-bottom:1px solid #ccc; padding:8px;">
+//                         <strong>${item[1]}</strong><br>
+//                         Category: ${item[3]} | Amount: ₹${item[2]}
+//                     </div>
+//                 `;
+//             });
+//         }
+
+//         document.getElementById("expenses").innerHTML = html;
+//     });
+// }
+
+function getExpenses() {
+    fetch('/expenses')
+    .then(res => res.json())
+    .then(data => {
+
+        let html = "";
+
+        if (data.length === 0) {
+            html = "<p>No expenses found</p>";
+        } else {
+            data.forEach(item => {
+                html += `
+                    <div class="card mb-2 p-2">
+                        <strong>${item[1]}</strong><br>
+                        Category: ${item[3]} <br>
+                        Amount: ₹${item[2]}
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById("expenses").innerHTML = html;
+    });
+}
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/service-worker.js')
+    .then(() => console.log("Service Worker Registered"));
+}
+
+</script>
+
+</body>
+</html>
