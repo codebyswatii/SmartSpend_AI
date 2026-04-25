@@ -25,6 +25,16 @@ def insert_expense(text, amount, category):
     conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
 
+    # 🔥 FORCE TABLE CREATION HERE (same connection)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS expenses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        text TEXT,
+        amount INTEGER,
+        category TEXT
+    )
+    """)
+
     cursor.execute(
         "INSERT INTO expenses (text, amount, category) VALUES (?, ?, ?)",
         (text, amount, category)
