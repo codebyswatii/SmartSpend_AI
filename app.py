@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask import jsonify
-from db import init_db, insert_expense, get_all_expenses
+from db import init_db, insert_expense, get_all_expenses, delete_last_expense
 from flask import render_template
 import pickle
 import re
@@ -22,35 +22,47 @@ def demo():
     }
 
 
+@app.route('/expenses', methods=['POST'])
+def fetch_expenses():
+    data = request.json or {}
+    user_id = data.get("user_id","")
 
-@app.route('/expenses', methods=['GET'])
-def get_expenses():
-    data = get_all_expenses()
+    data = get_all_expenses(user_id)
     return jsonify(data)
 
-
-@app.route('/add-test')
-def add_test():
-    text = "pizza 300"
-    text = "uber ride 200"
-    text = "electricity bill 1000"
-    text = "pizza 300"
+# @app.route('/add-test')
+# def add_test():
+#     text = "pizza 300"
+#     text = "uber ride 200"
+#     text = "electricity bill 1000"
+#     text = "pizza 300"
     
-    category = predict_category(text)
-    amount = extract_amount(text)
+#     category = predict_category(text)
+#     amount = extract_amount(text)
     
-    insert_expense(text, amount, category)
+#     insert_expense(text, amount, category)
     
-    return {
-        "text": text,
-        "category": category,
-        "amount": amount
-    }
+#     return {
+#         "text": text,
+#         "category": category,
+#         "amount": amount
+#     }
 
+@app.route('/delete', methods=['POST'])
+def delete_expense():
+    data = request.json or {}
+    user_id = data.get("user_id","")
 
-@app.route('/insights', methods=['GET'])
+    delete_last_expense(user_id)
+
+    return jsonify({"message": "Last expense deleted"})
+
+@app.route('/insights', methods=['POST'])
 def insights():
-    data = get_all_expenses()
+    data_json = request.json or {}
+    user_id = data_json.get("user_id","")
+
+    data = get_all_expenses(user_id)
 
     if not data:
         return jsonify({
@@ -63,8 +75,12 @@ def insights():
     category_sum = {}
 
     for row in data:
-        amount = row[2]
-        category = row[3]
+        try:
+            amount = int(row[3])
+        except:
+            amount = 0
+    
+        category = row[4]
 
         total += amount
 
@@ -78,7 +94,7 @@ def insights():
     insights = []
 
     for cat, amt in category_sum.items():
-        percent = (amt / total) * 100
+        percent = (amt / total) * 100 if total != 0 else 0
         result[cat] = round(percent, 2)
 
         if percent > 50:
@@ -95,11 +111,11 @@ def insights():
     #     if amount > 2000:
     #         insights.append(f"Unusually high expense detected: ₹{amount}")
     # 🔥 Smarter Anomaly Detection
-    amounts = [row[2] for row in data]
+    amounts = [int(row[3]) if str(row[3]).isdigit() else 0 for row in data]
     avg = sum(amounts) / len(amounts)
 
     for row in data:
-        amount = row[2]
+        amount = int(row[3])
         
         if amount > avg * 2:
             insights.append(f"Unusual high expense detected: ₹{amount}")
@@ -145,10 +161,11 @@ def extract_amount(text):
 def add_expense():
     data = request.json
     text = data.get("text", "")
+    user_id = data.get("user_id", "")
 
     category = predict_category(text)
     amount = extract_amount(text)
-    insert_expense(text, amount, category)
+    insert_expense(user_id, text, amount, category)
 
     return jsonify({
         "text": text,
