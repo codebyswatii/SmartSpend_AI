@@ -1,17 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Expense Tracker</title>
+    <link rel="icon" type="image/png" href="/static/icon.png">
+    <title>SmartSpend AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="manifest" href="/static/manifest.json">
+    
+    <style>
+    body.dark-mode {
+        background-color: #121212 !important;
+        color: #ffffff;
+    }
+
+    .dark-mode .card {
+        background-color: #1e1e1e;
+        color: #ffffff;
+    }
+
+    .dark-mode .form-control {
+        background-color: #2a2a2a;
+        color: #ffffff;
+        border-color: #444;
+    }
+
+    .dark-mode .btn {
+        border-color: #555;
+    }
+
+    .dark-mode .bg-light {
+        background-color: #1e1e1e !important;
+    }
+
+    .dark-mode .bg-white {
+        background-color: #2a2a2a !important;
+    }
+
+    .form-check-input {
+    cursor: pointer;
+    }
+
+    body {
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .dark-mode input::placeholder {
+    color: #ffffff !important;
+    opacity: 0.7;
+    }
+</style>
+    
 </head>
 
 <body class="bg-light">
 
 <div class="container mt-5">
 
+    <h2 class="text-center mb-4"><img src="/static/icon.png" width="30" height="30">SmartSpend AI</h2>
     <div class="card shadow p-4">
-        <h2 class="text-center mb-4">💰 AI Expense Tracker</h2>
+
+        <!-- <h2 class="text-center mb-4">SmartSpend AI</h2> -->
+        <div class="d-flex justify-content-end mb-2 align-items-center gap-2">
+            <span id="themeLabel">🌙</span>
+
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="themeToggle" onclick="toggleTheme()">
+            </div>
+        </div>
 
         <div class="input-group mb-3">
             <input type="text" id="expenseText" class="form-control" placeholder="Enter expense (e.g. pizza 300)">
@@ -21,18 +76,18 @@
         <div class="alert alert-info" id="result" style="display:none;"></div>
 
         <div class="text-center mt-3">
-            <button class="btn btn-success mt-2" onclick="getInsights()">Show Insights</button>
-            <button class="btn btn-secondary mt-2" onclick="getExpenses()">Show All Expenses</button>
+            <button class="btn btn-success mt-2" onclick="showInsights()">Show Insights</button>
+            <button class="btn btn-secondary mt-2" onclick="showExpenses()">Show All Expenses</button>
             <button class="btn btn-danger mt-2" onclick="deleteExpense()">Delete Last Expense</button>
         </div>
     </div>
 
-    <div class="card shadow p-4 mt-4">
+    <div class="card shadow p-4 mt-4" id="insightsCard" style="display:none;">
         <h4>📊 Financial Insights</h4>
         <div id="insights" class="bg-white p-3 rounded border"></div>
     </div>
 
-    <div class="card shadow p-4 mt-4">
+    <div class="card shadow p-4 mt-4" id="expensesCard" style="display:none;">
         <h4>📋 All Expenses</h4>
         <div id="expenses" class="bg-light p-3 rounded border"></div>
     </div>
@@ -41,20 +96,36 @@
 
 <script>
 
-let user_id = localStorage.getItem("user_id");
+window.onload = function () {
+    let savedTheme = localStorage.getItem("theme");
+    let toggle = document.getElementById("themeToggle");
+    let label = document.getElementById("themeLabel");
 
-if (!user_id) {
-    user_id = "user_" + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem("user_id", user_id);
-}
+    if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+        toggle.checked = true;
+        label.innerText = "☀️";
+    } else {
+        label.innerText = "🌙";
+    }
+};
+
+// let user_id = localStorage.getItem("user_id");
+
+// if (!user_id) {
+//     user_id = "user_" + Math.random().toString(36).substr(2, 9);
+//     localStorage.setItem("user_id", user_id);
+// }
 
 function addExpense() {
     let text = document.getElementById("expenseText").value;
 
     fetch('/add', {
         method: 'POST',
+        credentials: "same-origin",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text, user_id: user_id })
+        // body: JSON.stringify({ text: text, user_id: user_id })
+        body: JSON.stringify({ text: text })
     })
     .then(res => res.json())
     .then(data => {
@@ -69,8 +140,9 @@ function addExpense() {
 function getInsights() {
     fetch('/insights', {
     method: 'POST',
+    credentials: "same-origin",
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user_id: user_id })
+    body: JSON.stringify({})
     })
     .then(res => res.json())
     .then(data => {
@@ -105,8 +177,9 @@ function getInsights() {
 function deleteExpense() {
     fetch('/delete', {
         method: 'POST',
+        credentials: "same-origin",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user_id })
+        body: JSON.stringify({})
     })
     .then(res => res.json())
     .then(data => {
@@ -142,11 +215,40 @@ function deleteExpense() {
 //     });
 // }
 
+function toggleTheme() {
+    let isDark = document.getElementById("themeToggle").checked;
+
+    if (isDark) {
+        document.body.classList.add("dark-mode");
+        localStorage.setItem("theme", "dark");
+        document.getElementById("themeLabel").innerText = "☀️";
+    } else {
+        document.body.classList.remove("dark-mode");
+        localStorage.setItem("theme", "light");
+        document.getElementById("themeLabel").innerText = "🌙";
+    }
+}
+
+function showInsights() {
+    document.getElementById("insightsCard").style.display = "block";
+    document.getElementById("expensesCard").style.display = "none";
+
+    getInsights(); // fetch data
+}
+
+function showExpenses() {
+    document.getElementById("expensesCard").style.display = "block";
+    document.getElementById("insightsCard").style.display = "none";
+
+    getExpenses(); // fetch data
+}
+
 function getExpenses() {
     fetch('/expenses', {
     method: 'POST',
+    credentials: "same-origin",
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user_id: user_id })
+    body: JSON.stringify({})
     })
     .then(res => res.json())
     .then(data => {

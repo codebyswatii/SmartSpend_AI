@@ -2,16 +2,26 @@ from flask import Flask, request
 from flask import jsonify
 from db import init_db, insert_expense, get_all_expenses, delete_last_expense
 from flask import render_template
+from flask import session
+import uuid
 import pickle
 import re
+import os
 
 app = Flask(__name__)
 
+# app.secret_key = os.environ.get("SECRET_KEY") or "dev_key_123"
+app.secret_key = os.environ.get("SECRET_KEY")
 init_db()
 
 @app.route('/')
 def home():
     return render_template("index.html")
+
+@app.before_request
+def set_user():
+    if "user_id" not in session:
+        session["user_id"] = str(uuid.uuid4())
 
 @app.route('/demo')
 def demo():
@@ -24,8 +34,10 @@ def demo():
 
 @app.route('/expenses', methods=['POST'])
 def fetch_expenses():
-    data = request.json or {}
-    user_id = data.get("user_id","")
+    # data = request.json or {}
+    # user_id = data.get("user_id","")
+
+    user_id = session["user_id"]
 
     data = get_all_expenses(user_id)
     return jsonify(data)
@@ -50,8 +62,9 @@ def fetch_expenses():
 
 @app.route('/delete', methods=['POST'])
 def delete_expense():
-    data = request.json or {}
-    user_id = data.get("user_id","")
+    # data = request.json or {}
+    # user_id = data.get("user_id","")
+    user_id = session["user_id"]
 
     delete_last_expense(user_id)
 
@@ -59,8 +72,10 @@ def delete_expense():
 
 @app.route('/insights', methods=['POST'])
 def insights():
-    data_json = request.json or {}
-    user_id = data_json.get("user_id","")
+    # data_json = request.json or {}
+    # user_id = data_json.get("user_id","")
+
+    user_id = session["user_id"]
 
     data = get_all_expenses(user_id)
 
@@ -159,9 +174,10 @@ def extract_amount(text):
 # API route
 @app.route('/add', methods=['POST'])
 def add_expense():
-    data = request.json
+    data = request.json or {}
     text = data.get("text", "")
-    user_id = data.get("user_id", "")
+    # user_id = data.get("user_id", "")
+    user_id = session["user_id"]
 
     category = predict_category(text)
     amount = extract_amount(text)
