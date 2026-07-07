@@ -1,0 +1,184 @@
+
+    body.dark-mode {
+        background-color: #121212 !important;
+        color: #ffffff;
+    }
+
+    .dark-mode .card {
+        background-color: #1e1e1e;
+        color: #ffffff;
+    }
+
+    .dark-mode .form-control {
+        background-color: #2a2a2a;
+        color: #ffffff;
+        border-color: #444;
+    }
+
+    .dark-mode .btn {
+        border-color: #555;
+    }
+
+    .dark-mode .bg-light {
+        background-color: #1e1e1e !important;
+    }
+
+    .dark-mode .bg-white {
+        background-color: #2a2a2a !important;
+    }
+
+    .form-check-input {
+    cursor: pointer;
+    }
+
+    body {
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .dark-mode input::placeholder {
+    color: #ffffff !important;
+    opacity: 0.7;
+    }
+
+/* ===========================
+   Landing Page
+=========================== */
+
+.landing-container{
+    max-width:700px;
+    margin:80px auto;
+    padding:50px;
+    text-align:center;
+
+    background:#1e1e1e;
+    border-radius:20px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,0.35);
+}
+
+.landing-container h1{
+    font-size:3rem;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    font-size:1.3rem;
+    color:#bdbdbd;
+    margin-bottom:30px;
+}
+
+.description{
+    font-size:1.1rem;
+    line-height:1.8;
+    color:#d5d5d5;
+}
+
+.landing-buttons{
+    margin-top:40px;
+
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.landing-buttons button{
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:10px;
+
+    font-size:17px;
+
+    transition:0.3s;
+
+    cursor:pointer;
+}
+
+.landing-buttons button:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 8px 20px rgba(0,0,0,0.3);
+}
+
+.or-text{
+
+    margin:10px 0;
+
+    color:#999;
+}
+
+/* Theme Toggle */
+
+/* #theme-toggle{
+
+    position:fixed;
+
+    top:20px;
+
+    right:20px;
+
+    width:50px;
+
+    height:50px;
+
+    border:none;
+
+    border-radius:50%;
+
+    cursor:pointer;
+
+    font-size:20px;
+
+    transition:.3s;
+} */
+
+#theme-toggle{
+
+    position:fixed;
+
+    top:20px;
+
+    right:20px;
+
+    width:50px;
+
+    height:50px;
+
+    border:none;
+
+    border-radius:50%;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+    background:white;
+
+    transition:.3s;
+}
+
+#theme-toggle:hover{
+
+    transform:scale(1.1);
+
+}
+
+body{
+
+    background:#f5f7fb;
+
+    color:#222;
+
+    transition:.3s;
+}
+
+body.dark-mode{
+
+    background:#121212;
+
+    color:white;
+}

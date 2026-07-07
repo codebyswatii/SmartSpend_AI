@@ -18,11 +18,48 @@ def init_db():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL
+    )
+    """)
+
     conn.commit()
     conn.close()
 
-def insert_expense(user_id, text, amount, category):
-    init_db()  # 🔥 ensures table exists
+def get_user_by_email(email):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT * FROM users WHERE email = ?",
+        (email,)
+    )
+
+    user = cursor.fetchone()
+
+    conn.close()
+    return user
+
+def insert_user(username, email, password_hash):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO users (username, email, password_hash)
+        VALUES (?, ?, ?)
+    """, (username, email, password_hash))
+
+    conn.commit()
+    conn.close()
+
+
+
+def insert_expense(owner_id, text, amount, category):
+    # init_db()  # 🔥 ensures table exists
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
@@ -39,14 +76,14 @@ def insert_expense(user_id, text, amount, category):
 
     cursor.execute(
         "INSERT INTO expenses (user_id, text, amount, category) VALUES (?, ?, ?, ?)",
-        (user_id, text, amount, category)
+        (owner_id, text, amount, category)
     )
 
     conn.commit()
     conn.close()
 
 #########################################
-def delete_last_expense(user_id):
+def delete_last_expense(owner_id):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
@@ -55,18 +92,18 @@ def delete_last_expense(user_id):
         WHERE id = (
             SELECT MAX(id) FROM expenses WHERE user_id = ?
         )
-    """, (user_id,))
+    """, (owner_id,))
     
     conn.commit()
     conn.close()
 
 #########################################
 
-def get_all_expenses(user_id):
+def get_all_expenses(owner_id):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM expenses WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT * FROM expenses WHERE user_id = ?", (owner_id,))
     data = cursor.fetchall()
 
     conn.close()
